@@ -1,0 +1,37 @@
+id: beta_unweighted_unifrac
+name: Beta Diversity Unweighted UniFrac
+version: "qiime2-2024.2"
+description: >
+  对均一化后的 ASV 表进行 beta 多样性分析，
+  计算 unweighted UniFrac 距离矩阵。需要有根进化树。
+
+inputs:
+  - id: rooted_tree
+    description: "有根进化树（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "PhylogeneticTree.Rooted"
+    required: true
+  - id: even_table
+    description: "均一化后的 ASV 表（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "EvenFeatureTable.QZA"
+    required: true
+
+outputs:
+  - id: distance_matrix
+    description: "Unweighted UniFrac 距离矩阵"
+    type:
+      format: "QZA"
+      semantic: "DistanceMatrix.UnweightedUnifrac"
+    filename_template: "unweighted-unifrac_distance_matrix.qza"
+
+parameters: []
+
+script_template: |
+  qiime diversity beta-phylogenetic \
+    --i-phylogeny {{ inputs.rooted_tree }} \
+    --i-table {{ inputs.even_table }} \
+    --p-metric unweighted-unifrac \
+    --o-distance-matrix {{ outputs.distance_matrix }}

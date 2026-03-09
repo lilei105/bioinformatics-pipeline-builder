@@ -1,0 +1,27 @@
+id: even
+name: Feature Table Rarefaction
+version: "1.0"
+description: >
+  对带有物种注释信息的 ASV 特征表进行丰度均一化处理。
+
+inputs:
+  - id: asv_table
+    description: "带物种注释的 ASV 特征表"
+    type:
+      format: "TXT"
+      semantic: "AnnotatedFeatureTable.TXT"
+    required: true
+
+outputs:
+  - id: even_table
+    description: "均一化后的 ASV 特征表"
+    type:
+      format: "TXT"
+      semantic: "EvenFeatureTable.TXT"
+    filename_template: "asv_table.even.txt"
+
+parameters: []
+
+script_template: |
+  perl even_table {{ inputs.asv_table }} \
+    --even {{ outputs.even_table }}

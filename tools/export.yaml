@@ -1,0 +1,29 @@
+id: export
+name: QIIME2 Export
+version: "qiime2-2024.2"
+description: >
+  将 QIIME2 的 QZA 或 QZV 格式文件解压导出为原始格式。
+  这是一个通用的解压工具。
+
+inputs:
+  - id: input_artifact
+    description: "输入的 QZA 或 QZV 文件"
+    type:
+      format: "QZA"
+      semantic: "QiimeArtifact"
+    required: true
+
+outputs:
+  - id: output_dir
+    description: "解压后的输出目录"
+    type:
+      format: "DIRECTORY"
+      semantic: "ExportedDirectory"
+    filename_template: "{sample_id}_exported"
+
+parameters: []
+
+script_template: |
+  qiime tools export \
+    --input-path {{ inputs.input_artifact }} \
+    --output-path {{ outputs.output_dir }}

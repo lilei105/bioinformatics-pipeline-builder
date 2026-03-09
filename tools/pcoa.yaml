@@ -1,0 +1,44 @@
+id: pcoa
+name: PCoA Ordination Analysis
+version: "qiime2-2024.2"
+description: >
+  基于距离矩阵（Bray-Curtis / Weighted UniFrac / Unweighted UniFrac）
+  进行 PCoA（主坐标分析）降维分析并绘图。
+
+inputs:
+  - id: group_info
+    description: "样本分组信息文件"
+    type:
+      format: "TSV"
+      semantic: "SampleGroupInfo"
+    required: true
+  - id: distance_matrix
+    description: "距离矩阵（任意类型均可）"
+    type:
+      format: "QZA"
+      semantic: "DistanceMatrix"
+    required: true
+
+outputs:
+  - id: pcoa_plot
+    description: "PCoA 分析绘图结果目录"
+    type:
+      format: "DIRECTORY"
+      semantic: "PCoAResult"
+    filename_template: "PCoA_result"
+
+parameters: []
+
+script_template: |
+  qiime diversity pcoa \
+    --i-distance-matrix {{ inputs.distance_matrix }} \
+    --o-pcoa pcoa_results.qza
+  qiime tools export \
+    --input-path pcoa_results.qza \
+    --output-path pcoa_results_qza
+  color_defined {{ inputs.group_info }} group_col.list
+  perl pcoa.pl pcoa_results_qza/ordination.txt pc.txt
+  Rscript plot_PCoA.R \
+    --unifrac_pc pc.txt \
+    --group_col group_col.list \
+    --outdir ./

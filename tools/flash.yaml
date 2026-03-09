@@ -1,0 +1,71 @@
+id: flash
+name: FLASH Sequence Merger
+version: "1.2.11"
+description: >
+  对去除引物后的双端 FASTQ 数据进行序列拼接（merge）。
+  将有重叠区域的 R1 和 R2 合并为一条完整序列。
+  若有引物需去除引物后再进行，多样本时可并行该步骤。
+
+inputs:
+  - id: r1
+    description: "去引物后的 R1 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "TrimmedPairedReads.Forward"
+    required: true
+  - id: r2
+    description: "去引物后的 R2 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "TrimmedPairedReads.Reverse"
+    required: true
+
+outputs:
+  - id: merged
+    description: "拼接后的单端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "MergedReads"
+    filename_template: "{sample_id}.extendedFrags.fastq"
+
+parameters:
+  - id: min_overlap
+    description: "最小重叠长度"
+    type: "integer"
+    required: false
+    default: 10
+    cli_flag: "-m"
+  - id: fragment_length
+    description: "预期片段长度"
+    type: "integer"
+    required: false
+    default: 300
+    cli_flag: "-f"
+  - id: max_mismatch_density
+    description: "最大错配密度"
+    type: "float"
+    required: false
+    default: 0.1
+    cli_flag: "-x"
+  - id: phred_offset
+    description: "Phred 质量值偏移"
+    type: "integer"
+    required: false
+    default: 33
+    cli_flag: "-p"
+  - id: read_length
+    description: "读长"
+    type: "integer"
+    required: false
+    default: 420
+    cli_flag: "-r"
+
+script_template: |
+  flash {{ inputs.r1 }} {{ inputs.r2 }} \
+    -o {{ outputs.merged }} \
+    -m {{ params.min_overlap }} \
+    -f {{ params.fragment_length }} \
+    -x {{ params.max_mismatch_density }} \
+    -p {{ params.phred_offset }} \
+    -r {{ params.read_length }} \
+    > {{ outputs.merged }}.flash.log

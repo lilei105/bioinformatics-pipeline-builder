@@ -1,0 +1,61 @@
+id: qc
+name: Fastp Quality Control
+version: "0.23.4"
+description: >
+  对拼接后的单端 FASTQ 数据进行质量控制和过滤。
+  过滤低质量序列，输出质控后的干净序列以及质控报告。
+  多样本时可并行该步骤。
+
+inputs:
+  - id: reads
+    description: "拼接后的单端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "MergedReads"
+    required: true
+
+outputs:
+  - id: clean_reads
+    description: "质控后的干净序列"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "CleanReads"
+    filename_template: "{sample_id}.clean.fastq"
+    # 聚合标记：此输出可被聚合为 SampleManifest
+    aggregation_output: true
+  - id: report_json
+    description: "质控报告 JSON 格式"
+    type:
+      format: "JSON"
+      semantic: "QCReport.JSON"
+    filename_template: "{sample_id}.qc_report.json"
+  - id: report_html
+    description: "质控报告 HTML 格式"
+    type:
+      format: "HTML"
+      semantic: "QCReport.HTML"
+    filename_template: "{sample_id}.qc_report.html"
+
+parameters:
+  - id: qualified_quality_phred
+    description: "碱基质量阈值"
+    type: "integer"
+    required: false
+    default: 19
+    cli_flag: "-q"
+  - id: unqualified_percent_limit
+    description: "允许的低质量碱基百分比"
+    type: "integer"
+    required: false
+    default: 15
+    cli_flag: "-u"
+
+script_template: |
+  fastp \
+    -i {{ inputs.reads }} \
+    -o {{ outputs.clean_reads }} \
+    -A -g \
+    -q {{ params.qualified_quality_phred }} \
+    -u {{ params.unqualified_percent_limit }} \
+    -j {{ outputs.report_json }} \
+    -h {{ outputs.report_html }}

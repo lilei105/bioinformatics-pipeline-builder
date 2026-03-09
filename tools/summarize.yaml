@@ -1,0 +1,45 @@
+id: summarize
+name: Feature Table Summarize
+version: "qiime2-2024.2"
+description: >
+  对 DADA2 降噪生成的特征表进行可视化处理，
+  生成 QZV 可视化文件和样本频率详情 CSV。
+
+inputs:
+  - id: feature_table
+    description: "QZA 格式的特征表"
+    type:
+      format: "QZA"
+      semantic: "FeatureTable.QZA"
+    required: true
+  - id: metadata
+    description: "样本元数据文件"
+    type:
+      format: "TSV"
+      semantic: "SampleManifest"
+    required: true
+
+outputs:
+  - id: visualization
+    description: "特征表可视化文件"
+    type:
+      format: "QZV"
+      semantic: "FeatureTableVisualization"
+    filename_template: "featureTable.qzv"
+  - id: frequency_detail
+    description: "样本频率详情"
+    type:
+      format: "CSV"
+      semantic: "SampleFrequencyDetail"
+    filename_template: "featureTable_qzv/sample-frequency-detail.csv"
+
+parameters: []
+
+script_template: |
+  qiime feature-table summarize \
+    --i-table {{ inputs.feature_table }} \
+    --o-visualization {{ outputs.visualization }} \
+    --m-sample-metadata-file {{ inputs.metadata }}
+  qiime tools export \
+    --input-path {{ outputs.visualization }} \
+    --output-path featureTable_qzv

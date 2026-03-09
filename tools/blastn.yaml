@@ -1,0 +1,79 @@
+id: blastn
+name: BLASTN Sequence Alignment
+version: "2.14.0"
+description: >
+  使用 NCBI BLASTN 进行核苷酸序列比对，
+  将查询序列与数据库进行比对，输出 M8（tabular）格式结果文件。
+
+inputs:
+  - id: query
+    description: "待比对的核苷酸查询序列（FASTA 格式）"
+    type:
+      format: "FASTA"
+      semantic: "QuerySequence.Nucleotide"
+    required: true
+  - id: database
+    description: "预先构建的 BLAST 核苷酸数据库"
+    type:
+      format: "BLAST_DB"
+      semantic: "BlastDatabase.Nucleotide"
+    required: true
+
+outputs:
+  - id: alignment_result
+    description: "BLASTN 比对结果（M8 tabular 格式）"
+    type:
+      format: "M8"
+      semantic: "AlignmentResult.Tabular"
+    filename_template: "{sample_id}.blastn.m8"
+  - id: log
+    description: "执行日志"
+    type:
+      format: "TXT"
+      semantic: "LogFile"
+    filename_template: "{sample_id}.blastn.log"
+
+parameters:
+  - id: evalue
+    description: "E-value 阈值"
+    type: "float"
+    required: false
+    default: 1e-5
+    cli_flag: "-evalue"
+  - id: word_size
+    description: "种子词长度"
+    type: "integer"
+    required: false
+    default: 11
+    cli_flag: "-word_size"
+  - id: max_target_seqs
+    description: "最大目标序列数"
+    type: "integer"
+    required: false
+    default: 10
+    cli_flag: "-max_target_seqs"
+  - id: perc_identity
+    description: "最小一致性百分比"
+    type: "float"
+    required: false
+    default: 0
+    cli_flag: "-perc_identity"
+  - id: num_threads
+    description: "使用的线程数"
+    type: "integer"
+    required: false
+    default: 8
+    cli_flag: "-num_threads"
+
+script_template: |
+  blastn \
+    -query {{ inputs.query }} \
+    -db {{ inputs.database }} \
+    -out {{ outputs.alignment_result }} \
+    -outfmt 6 \
+    -evalue {{ params.evalue }} \
+    -word_size {{ params.word_size }} \
+    -max_target_seqs {{ params.max_target_seqs }} \
+    -perc_identity {{ params.perc_identity }} \
+    -num_threads {{ params.num_threads }} \
+    2> {{ outputs.log }}

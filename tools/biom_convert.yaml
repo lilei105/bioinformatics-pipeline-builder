@@ -1,0 +1,38 @@
+id: biom_convert
+name: BIOM Format Converter
+version: "2.1.15"
+description: >
+  将 BIOM 格式文件转换为 TSV/TXT 格式。
+  如带物种注释可增加参数 --header-key taxonomy。
+
+inputs:
+  - id: input_biom
+    description: "输入 BIOM 文件"
+    type:
+      format: "BIOM"
+      semantic: "GenericBiomTable"
+    required: true
+
+outputs:
+  - id: output_tsv
+    description: "输出 TSV 文件"
+    type:
+      format: "TSV"
+      semantic: "GenericTsvTable"
+    filename_template: "{sample_id}_converted.tsv"
+
+parameters:
+  - id: header_key
+    description: "附加的元数据键名，如 taxonomy"
+    type: "string"
+    required: false
+    default: ""
+    cli_flag: "--header-key"
+
+script_template: |
+  source /software/anaconda3/bin/activate 16s-env
+  biom convert \
+    -i {{ inputs.input_biom }} \
+    -o {{ outputs.output_tsv }} \
+    --to-tsv \
+    {{ params.header_key }}

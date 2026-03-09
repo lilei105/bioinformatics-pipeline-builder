@@ -1,0 +1,45 @@
+id: phylogeny_tree
+name: Phylogenetic Tree Builder
+version: "qiime2-2024.2"
+description: >
+  对 DADA2 降噪得到的 ASV 代表序列进行多序列比对，
+  并使用 MAFFT + FastTree 构建系统发育树（含无根树和有根树）。
+
+inputs:
+  - id: rep_seqs
+    description: "ASV 代表序列（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "RepresentativeSequences.QZA"
+    required: true
+
+outputs:
+  - id: unrooted_tree
+    description: "无根进化树"
+    type:
+      format: "QZA"
+      semantic: "PhylogeneticTree.Unrooted"
+    filename_template: "unrooted-tree.qza"
+  - id: rooted_tree
+    description: "有根进化树"
+    type:
+      format: "QZA"
+      semantic: "PhylogeneticTree.Rooted"
+    filename_template: "rooted-tree.qza"
+
+parameters:
+  - id: n_threads
+    description: "使用的线程数"
+    type: "integer"
+    required: false
+    default: 12
+    cli_flag: "--p-n-threads"
+
+script_template: |
+  qiime phylogeny align-to-tree-mafft-fasttree \
+    --i-sequences {{ inputs.rep_seqs }} \
+    --o-alignment aligned-rep-seqs.qza \
+    --o-masked-alignment masked-aligned-rep-seqs.qza \
+    --o-tree {{ outputs.unrooted_tree }} \
+    --o-rooted-tree {{ outputs.rooted_tree }} \
+    --p-n-threads {{ params.n_threads }}

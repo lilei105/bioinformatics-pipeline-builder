@@ -1,0 +1,36 @@
+id: alpha_diversity
+name: Alpha Diversity Calculator
+version: "1.0"
+description: >
+  对 ASV 或物种丰度表格进行 alpha 多样性指数计算，
+  包括 chao1、dominance、goods_coverage、observed_species、
+  shannon、simpson 等指数。
+
+inputs:
+  - id: abundance_table
+    description: "带物种注释的 ASV 特征表"
+    type:
+      format: "TXT"
+      semantic: "AnnotatedFeatureTable.TXT"
+    required: true
+
+outputs:
+  - id: alpha_index
+    description: "Alpha 多样性指数表"
+    type:
+      format: "TXT"
+      semantic: "AlphaDiversityIndex"
+    filename_template: "alpha_diversity.txt"
+
+parameters: []
+
+script_template: |
+  biom convert \
+    -i {{ inputs.abundance_table }} \
+    -o input.biom \
+    --table-type="OTU table" \
+    --to-json
+  alpha_diversity.py \
+    -i input.biom \
+    -m chao1,dominance,goods_coverage,observed_species,shannon,simpson \
+    -o {{ outputs.alpha_index }}

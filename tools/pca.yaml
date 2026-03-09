@@ -1,0 +1,38 @@
+id: pca
+name: PCA Ordination Analysis
+version: "1.0"
+description: >
+  对丰度或表达矩阵进行 PCA（主成分分析）降维分析。
+  输入为任意分类水平的相对丰度表和样本分组信息。
+
+inputs:
+  - id: group_info
+    description: "样本分组信息文件"
+    type:
+      format: "TSV"
+      semantic: "SampleGroupInfo"
+    required: true
+  - id: abundance_table
+    description: "相对丰度表（任意分类水平均可）"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance"
+    required: true
+
+outputs:
+  - id: pca_plot
+    description: "PCA 分析绘图结果目录"
+    type:
+      format: "DIRECTORY"
+      semantic: "PCAResult"
+    filename_template: "PCA_result"
+
+parameters: []
+
+script_template: |
+  color_defined {{ inputs.group_info }} group_col.list
+  Rscript UOA \
+    --rFile {{ inputs.abundance_table }} \
+    --gcFile group_col.list \
+    --method pca \
+    --workdir ./

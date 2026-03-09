@@ -1,0 +1,36 @@
+id: import_tool
+name: QIIME2 Import
+version: "qiime2-2024.2"
+description: >
+  将 FASTA、TXT、TSV 等格式文件转化为 QIIME2 可识别的
+  QZA 压缩格式。这是一个通用的导入工具。
+
+inputs:
+  - id: input_file
+    description: "输入文件（FASTA/TXT/TSV 等）"
+    type:
+      format: "GENERIC"
+      semantic: "GenericBioFile"
+    required: true
+
+outputs:
+  - id: output_qza
+    description: "转换后的 QZA 文件"
+    type:
+      format: "QZA"
+      semantic: "QiimeArtifact"
+    filename_template: "{sample_id}_imported.qza"
+
+parameters:
+  - id: import_type
+    description: "QIIME2 导入类型，如 FeatureData[Sequence]"
+    type: "string"
+    required: true
+    default: "FeatureData[Sequence]"
+    cli_flag: "--type"
+
+script_template: |
+  qiime tools import \
+    --input-path {{ inputs.input_file }} \
+    --output-path {{ outputs.output_qza }} \
+    --type '{{ params.import_type }}'

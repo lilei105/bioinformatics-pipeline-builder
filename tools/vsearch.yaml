@@ -1,0 +1,62 @@
+id: vsearch
+name: VSEARCH Taxonomy Classifier
+version: "qiime2-2024.2"
+description: >
+  使用 VSEARCH 对 DADA2 产出的 ASV 代表序列进行物种注释。
+  需要提供参考数据库的序列文件和注释文件。
+  输出物种注释结果（QZA 和 TSV 格式）。
+
+inputs:
+  - id: query_seqs
+    description: "ASV 代表序列（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "RepresentativeSequences.QZA"
+    required: true
+  - id: ref_reads
+    description: "参考数据库序列文件"
+    type:
+      format: "QZA"
+      semantic: "ReferenceDatabase.Reads"
+    required: true
+  - id: ref_taxonomy
+    description: "参考数据库注释文件"
+    type:
+      format: "QZA"
+      semantic: "ReferenceDatabase.Taxonomy"
+    required: true
+
+outputs:
+  - id: taxonomy_qza
+    description: "物种注释结果（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "Taxonomy.QZA"
+    filename_template: "seq_taxonomy.qza"
+  - id: taxonomy_tsv
+    description: "物种注释结果（TSV 格式，由 QZA 解压得到）"
+    type:
+      format: "TSV"
+      semantic: "Taxonomy.TSV"
+    filename_template: "seq_taxonomy_qza/taxonomy.tsv"
+
+parameters:
+  - id: n_threads
+    description: "使用的线程数"
+    type: "integer"
+    required: false
+    default: 16
+    cli_flag: "--p-threads"
+
+script_template: |
+  source /software/anaconda3/bin/activate 16s-env
+  qiime feature-classifier classify-consensus-vsearch \
+    --i-query {{ inputs.query_seqs }} \
+    --p-threads {{ params.n_threads }} \
+    --i-reference-reads {{ inputs.ref_reads }} \
+    --i-reference-taxonomy {{ inputs.ref_taxonomy }} \
+    --o-classification {{ outputs.taxonomy_qza }} \
+    --o-search-results taxonomy.qza
+  qiime tools export \
+    --input-path {{ outputs.taxonomy_qza }} \
+    --output-path seq_taxonomy_qza

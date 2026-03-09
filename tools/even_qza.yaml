@@ -1,0 +1,43 @@
+id: even_qza
+name: Even Table to QZA Converter
+version: "1.0"
+description: >
+  将 TXT 格式的均一化 ASV 表转化为 BIOM 格式，
+  再导入为 QIIME2 的 QZA 格式，用于后续 beta 多样性分析。
+
+inputs:
+  - id: even_table
+    description: "均一化后的 ASV 特征表（TXT 格式）"
+    type:
+      format: "TXT"
+      semantic: "EvenFeatureTable.TXT"
+    required: true
+
+outputs:
+  - id: even_biom
+    description: "均一化 ASV 表（BIOM 格式）"
+    type:
+      format: "BIOM"
+      semantic: "EvenFeatureTable.BIOM"
+    filename_template: "asv_table.even.biom"
+  - id: even_qza
+    description: "均一化 ASV 表（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "EvenFeatureTable.QZA"
+    filename_template: "asv_table.even.qza"
+
+parameters: []
+
+script_template: |
+  biom convert \
+    -i {{ inputs.even_table }} \
+    -o {{ outputs.even_biom }} \
+    --to-json \
+    --table-type="OTU table" \
+    --process-obs-metadata taxonomy
+  qiime tools import \
+    --input-path {{ outputs.even_biom }} \
+    --type 'FeatureTable[Frequency]' \
+    --input-format BIOMV100Format \
+    --output-path {{ outputs.even_qza }}

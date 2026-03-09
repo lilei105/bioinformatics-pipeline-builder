@@ -1,0 +1,73 @@
+id: cutadapt
+name: Cutadapt Primer Trimmer
+version: "4.4"
+description: >
+  对双端 FASTQ 测序数据进行引物序列的切除。
+  输入为原始的双端 FASTQ 文件（R1 和 R2），
+  输出为去除引物后的双端 FASTQ 文件。多样本时可并行该步骤。
+
+inputs:
+  - id: r1
+    description: "原始 R1 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "RawPairedReads.Forward"
+    required: true
+  - id: r2
+    description: "原始 R2 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "RawPairedReads.Reverse"
+    required: true
+
+outputs:
+  - id: out_r1
+    description: "去除引物后的 R1 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "TrimmedPairedReads.Forward"
+    filename_template: "{sample_id}.trimmed.R1.fastq.gz"
+  - id: out_r2
+    description: "去除引物后的 R2 端 FASTQ 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "TrimmedPairedReads.Reverse"
+    filename_template: "{sample_id}.trimmed.R2.fastq.gz"
+
+parameters:
+  - id: f_primer
+    description: "正向引物序列"
+    type: "string"
+    required: true
+    default: "PRIMER_F"
+    cli_flag: "-g"
+  - id: r_primer
+    description: "反向引物序列"
+    type: "string"
+    required: true
+    default: "PRIMER_R"
+    cli_flag: "-G"
+  - id: error_rate
+    description: "允许的最大错误率"
+    type: "float"
+    required: false
+    default: 0.1
+    cli_flag: "-e"
+  - id: min_length
+    description: "保留序列的最小长度"
+    type: "integer"
+    required: false
+    default: 100
+    cli_flag: "--minimum-length"
+
+script_template: |
+  cutadapt \
+    -g {{ params.f_primer }} \
+    -G {{ params.r_primer }} \
+    -e {{ params.error_rate }} \
+    --discard-untrimmed \
+    --minimum-length {{ params.min_length }} \
+    -o {{ outputs.out_r1 }} \
+    -p {{ outputs.out_r2 }} \
+    {{ inputs.r1 }} \
+    {{ inputs.r2 }}

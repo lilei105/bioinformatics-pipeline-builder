@@ -1,0 +1,30 @@
+id: beta_bray_curtis
+name: Beta Diversity Bray-Curtis
+version: "qiime2-2024.2"
+description: >
+  对均一化后的 ASV 表进行 beta 多样性分析，
+  计算 Bray-Curtis 距离矩阵。不需要进化树。
+
+inputs:
+  - id: even_table
+    description: "均一化后的 ASV 表（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "EvenFeatureTable.QZA"
+    required: true
+
+outputs:
+  - id: distance_matrix
+    description: "Bray-Curtis 距离矩阵"
+    type:
+      format: "QZA"
+      semantic: "DistanceMatrix.BrayCurtis"
+    filename_template: "bray-curtis_distance_matrix.qza"
+
+parameters: []
+
+script_template: |
+  qiime diversity beta \
+    --i-table {{ inputs.even_table }} \
+    --p-metric bray-curtis \
+    --o-distance-matrix {{ outputs.distance_matrix }}

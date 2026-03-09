@@ -1,0 +1,64 @@
+id: get_relative
+name: Relative Abundance Calculator
+version: "1.0"
+description: >
+  对均一化后的带物种注释 ASV 特征表进行相对丰度计算，
+  输出界、门、纲、目、科、属、种七个分类水平的相对丰度表格。
+
+inputs:
+  - id: even_table
+    description: "均一化后的 ASV 特征表"
+    type:
+      format: "TXT"
+      semantic: "EvenFeatureTable.TXT"
+    required: true
+
+outputs:
+  - id: kingdom
+    description: "界水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Kingdom"
+    filename_template: "Relative/asv_table.k.relative.xls"
+  - id: phylum
+    description: "门水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Phylum"
+    filename_template: "Relative/asv_table.p.relative.xls"
+  - id: class
+    description: "纲水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Class"
+    filename_template: "Relative/asv_table.c.relative.xls"
+  - id: order
+    description: "目水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Order"
+    filename_template: "Relative/asv_table.o.relative.xls"
+  - id: family
+    description: "科水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Family"
+    filename_template: "Relative/asv_table.f.relative.xls"
+  - id: genus
+    description: "属水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Genus"
+    filename_template: "Relative/asv_table.g.relative.xls"
+  - id: species
+    description: "种水平相对丰度表"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance.Species"
+    filename_template: "Relative/asv_table.s.relative.xls"
+
+parameters: []
+
+script_template: |
+  perl even_table {{ inputs.even_table }} \
+    --prefix Relative/asv_table

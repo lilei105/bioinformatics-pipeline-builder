@@ -1,0 +1,40 @@
+id: adonis
+name: PERMANOVA (Adonis) Analysis
+version: "1.0"
+description: >
+  基于距离矩阵进行 Adonis（PERMANOVA）统计分析，
+  检验不同分组之间的群落结构差异是否显著。
+
+inputs:
+  - id: group_info
+    description: "样本分组信息文件"
+    type:
+      format: "TSV"
+      semantic: "SampleGroupInfo"
+    required: true
+  - id: distance_matrix
+    description: "距离矩阵（任意类型均可）"
+    type:
+      format: "QZA"
+      semantic: "DistanceMatrix"
+    required: true
+
+outputs:
+  - id: adonis_result
+    description: "Adonis 统计分析结果目录"
+    type:
+      format: "DIRECTORY"
+      semantic: "AdonisResult"
+    filename_template: "Adonis_result"
+
+parameters: []
+
+script_template: |
+  qiime tools export \
+    --input-path {{ inputs.distance_matrix }} \
+    --output-path distance_matrix_exported
+  perl adonis.R.pl \
+    distance_matrix_exported/distance-matrix.tsv \
+    {{ inputs.group_info }} \
+    --dist \
+    --outdir ./

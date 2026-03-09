@@ -1,0 +1,37 @@
+id: t_test
+name: T-test Statistical Analysis
+version: "1.0"
+description: >
+  对丰度或表达矩阵进行 T-test 统计分析，
+  检验不同分组之间的物种丰度差异是否显著。
+
+inputs:
+  - id: group_info
+    description: "样本分组信息文件"
+    type:
+      format: "TSV"
+      semantic: "SampleGroupInfo"
+    required: true
+  - id: abundance_table
+    description: "相对丰度表（任意分类水平均可）"
+    type:
+      format: "XLS"
+      semantic: "RelativeAbundance"
+    required: true
+
+outputs:
+  - id: ttest_result
+    description: "T-test 统计分析结果目录"
+    type:
+      format: "DIRECTORY"
+      semantic: "TtestResult"
+    filename_template: "Ttest_result"
+
+parameters: []
+
+script_template: |
+  color_defined {{ inputs.group_info }} group_col.list
+  Rscript Ttest \
+    --rFile {{ inputs.abundance_table }} \
+    --gcFile group_col.list \
+    --workdir ./

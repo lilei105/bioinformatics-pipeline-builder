@@ -1,0 +1,85 @@
+id: dada2
+name: DADA2 Denoiser
+version: "qiime2-2024.2"
+description: >
+  对质控好的单端 FASTQ 数据进行降噪。如果是多个样本，
+  要将所有样本放到一起进行降噪。输出 ASV 特征表、代表序列、
+  降噪统计，以及解压后的 FASTA 和 BIOM 文件。
+
+inputs:
+  - id: manifest
+    description: "样本清单文件，包含所有样本的 FASTQ 路径"
+    type:
+      format: "TSV"
+      semantic: "SampleManifest"
+    required: true
+    # 聚合标记：此输入需要从多个 CleanReads 聚合而来
+    aggregation_input: true
+    aggregation_from: "CleanReads"
+
+outputs:
+  - id: feature_table_qza
+    description: "DADA2 降噪后的 ASV 特征表（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "FeatureTable.QZA"
+    filename_template: "dada2-table.qza"
+  - id: denoising_stats
+    description: "DADA2 降噪统计文件"
+    type:
+      format: "QZA"
+      semantic: "DenoisingStats.QZA"
+    filename_template: "dada2-stats.qza"
+  - id: rep_seqs_qza
+    description: "ASV 代表序列（QZA 格式）"
+    type:
+      format: "QZA"
+      semantic: "RepresentativeSequences.QZA"
+    filename_template: "dada2-repseq.qza"
+  - id: rep_seqs_fasta
+    description: "ASV 代表序列（FASTA 格式，由 QZA 解压得到）"
+    type:
+      format: "FASTA"
+      semantic: "RepresentativeSequences.FASTA"
+    filename_template: "dada2-repseq_qza/dna-sequences.fasta"
+  - id: feature_table_biom
+    description: "ASV 特征表（BIOM 格式，由 QZA 解压得到）"
+    type:
+      format: "BIOM"
+      semantic: "FeatureTable.BIOM"
+    filename_template: "dada2-table_qza/feature-table.biom"
+
+parameters:
+  - id: trunc_len
+    description: "截断长度，0 表示不截断"
+    type: "integer"
+    required: false
+    default: 0
+    cli_flag: "--p-trunc-len"
+  - id: n_threads
+    description: "使用的线程数"
+    type: "integer"
+    required: false
+    default: 12
+    cli_flag: "--p-n-threads"
+
+script_template: |
+  source /software/anaconda3/bin/activate 16s-env
+  qiime tools import \
+    --type 'SampleData[SequencesWithQuality]' \
+    --input-format SingleEndFastqManifestPhred33V2 \
+    --input-path {{ inputs.manifest }} \
+    --output-path allFastq.qza
+  qiime dada2 denoise-single \
+    --i-demultiplexed-seqs allFastq.qza \
+    --p-trunc-len {{ params.trunc_len }} \
+    --o-table {{ outputs.feature_table_qza }} \
+    --o-representative-sequences {{ outputs.rep_seqs_qza }} \
+    --o-denoising-stats {{ outputs.denoising_stats }} \
+    --p-n-threads {{ params.n_threads }}
+  qiime tools export \
+    --input-path {{ outputs.feature_table_qza }} \
+    --output-path dada2-table_qza
+  qiime tools export \
+    --input-path {{ outputs.rep_seqs_qza }} \
+    --output-path dada2-repseq_qza

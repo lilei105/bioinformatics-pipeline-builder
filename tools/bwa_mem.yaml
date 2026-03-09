@@ -1,0 +1,73 @@
+id: bwa_mem
+name: BWA-MEM Sequence Alignment
+version: "0.7.17"
+description: >
+  使用 BWA-MEM 算法将测序序列比对到参考基因组，
+  支持长读长和高准确度测序数据，输出 SAM/BAM 格式比对结果。
+
+inputs:
+  - id: reads_r1
+    description: "待比对的 FASTQ 测序数据（R1 或 SE）"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "SequencingReads.Forward"
+    required: true
+  - id: reads_r2
+    description: "PE 模式的 R2 文件"
+    type:
+      format: "FASTQ_GZ"
+      semantic: "SequencingReads.Reverse"
+    required: false
+  - id: reference
+    description: "参考基因组 FASTA 文件（需预先建立 BWA 索引）"
+    type:
+      format: "FASTA"
+      semantic: "ReferenceGenome"
+    required: true
+
+outputs:
+  - id: alignment_sam
+    description: "BWA-MEM 比对结果（SAM 格式）"
+    type:
+      format: "SAM"
+      semantic: "AlignmentResult.SAM"
+    filename_template: "{sample_id}.aligned.sam"
+  - id: alignment_bam
+    description: "排序后的比对结果（BAM 格式）"
+    type:
+      format: "BAM"
+      semantic: "AlignmentResult.BAM"
+    filename_template: "{sample_id}.aligned.sorted.bam"
+
+parameters:
+  - id: threads
+    description: "比对使用的线程数"
+    type: "integer"
+    required: false
+    default: 8
+    cli_flag: "-t"
+  - id: min_seed_len
+    description: "最小种子长度"
+    type: "integer"
+    required: false
+    default: 19
+    cli_flag: "-k"
+  - id: read_group
+    description: "Read Group 信息"
+    type: "string"
+    required: false
+    default: ""
+    cli_flag: "-R"
+
+script_template: |
+  bwa mem \
+    -t {{ params.threads }} \
+    -k {{ params.min_seed_len }} \
+    {{ inputs.reference }} \
+    {{ inputs.reads_r1 }} \
+    {{ inputs.reads_r2 }} \
+    > {{ outputs.alignment_sam }}
+  samtools sort \
+    -@ {{ params.threads }} \
+    -o {{ outputs.alignment_bam }} \
+    {{ outputs.alignment_sam }}

@@ -1,0 +1,49 @@
+id: add_metadata
+name: BIOM Add Metadata
+version: "2.1.15"
+description: >
+  将物种注释信息添加到 BIOM 格式的 ASV 特征表中，
+  并转换为带注释的 TXT 格式。
+
+inputs:
+  - id: feature_table
+    description: "BIOM 格式的 ASV 特征表"
+    type:
+      format: "BIOM"
+      semantic: "FeatureTable.BIOM"
+    required: true
+  - id: taxonomy
+    description: "物种注释 TSV 文件"
+    type:
+      format: "TSV"
+      semantic: "Taxonomy.TSV"
+    required: true
+
+outputs:
+  - id: annotated_biom
+    description: "带物种注释的 BIOM 特征表"
+    type:
+      format: "BIOM"
+      semantic: "AnnotatedFeatureTable.BIOM"
+    filename_template: "featureTaxonomy.biom"
+  - id: annotated_txt
+    description: "带物种注释的 ASV 特征表（TXT 格式）"
+    type:
+      format: "TXT"
+      semantic: "AnnotatedFeatureTable.TXT"
+    filename_template: "asv_table.txt"
+
+parameters: []
+
+script_template: |
+  source /software/anaconda3/bin/activate 16s-env
+  biom add-metadata \
+    -i {{ inputs.feature_table }} \
+    -o {{ outputs.annotated_biom }} \
+    --observation-metadata-fp {{ inputs.taxonomy }} \
+    --sc-separated taxonomy
+  biom convert \
+    -i {{ outputs.annotated_biom }} \
+    -o {{ outputs.annotated_txt }} \
+    --to-tsv \
+    --header-key taxonomy
